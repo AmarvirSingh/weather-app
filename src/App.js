@@ -8,6 +8,8 @@ function App() {
   const [sentLocation, setSentLocation] = useState("");
   const [data, setData] = useState();
   const [Loading, setLoading] = useState(false);
+  //const [ErrorMessage, setErrorMessage] = useState("");
+  const [showError, setShowError] = useState(false);
 
   async function fetchData() {
     const response = await axios.post(
@@ -16,13 +18,20 @@ function App() {
         location: sentLocation,
       }
     );
-    setData(response.data);
+
+    if (Number(response.data.data.cod) === 404) {
+      console.log(response.data.data.cod);
+      setShowError(true);
+      setData();
+      return; //setErrorMessage("Please enter the valid city");
+    }
+    setData(response.data.data);
+    setShowError(false);
   }
   const getData = async (e) => {
     setLoading(true);
     if (e.key === "Enter") {
       if (sentLocation === "") {
-        console.log(`${process.env.REACT_APP_URI}/getWeather`);
         setLoading(false);
         return alert("Search Field Can not be Empty");
       }
@@ -60,42 +69,59 @@ function App() {
         {data ? (
           <div className="">
             <p className="fs-3 text-light fw-bold">
-              {data.location}{" "}
-              <sup className="bg-info px-1  rounded-4 "> {data.country}</sup>{" "}
+              {data.name}{" "}
+              <sup className="bg-info px-1  rounded-4 ">
+                {" "}
+                {data.sys.country}
+              </sup>{" "}
             </p>
             <img
               className=" w-25 "
-              src={`https://openweather.site/img/wn/${data.icon}.png`}
+              src={`https://openweather.site/img/wn/${data.weather[0].icon}.png`}
               alt="hello"
             />
-            <p className="fs-5 fw-light">{data.description}</p>
+            <p className="fs-5 fw-light">{data.weather[0].description}</p>
             <div className="d-flex justify-content-around ">
               <p>
-                {String((data.maxTemp - 32) * (5 / 9)).slice(0, 4)}°
+                {String((data.main.temp_max - 32) * (5 / 9)).slice(0, 4)}°
                 <small>max</small>
               </p>
               <p>
-                {String((data.temp - 32) * (5 / 9)).slice(0, 4)}°
+                {String((data.main.temp - 32) * (5 / 9)).slice(0, 4)}°
                 <small>current</small>
               </p>
               <p>
-                {String((data.minTemp - 32) * (5 / 9)).slice(0, 4)}°
+                {String((data.main.temp_min - 32) * (5 / 9)).slice(0, 4)}°
                 <small>min</small>
               </p>
             </div>
             <p>
-              {`Feels Like ${String((data.feelsLike - 32) * (5 / 9)).slice(
-                0,
-                4
-              )} `}
+              {`Feels Like ${String(
+                (data.main.feels_like - 32) * (5 / 9)
+              ).slice(0, 4)} `}
             </p>
-            <hr />
           </div>
         ) : (
           <div>
             {" "}
             <p>No Data</p>
           </div>
+        )}
+        <hr />
+
+        {showError ? (
+          <p>Please enter a valid city</p>
+        ) : (
+          data && (
+            <p>
+              Location Updated at -{" "}
+              {new Date().toLocaleTimeString("en-US", {
+                hour12: true,
+                hour: "numeric",
+                minute: "numeric",
+              })}
+            </p>
+          )
         )}
       </div>
     </div>
