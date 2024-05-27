@@ -12,20 +12,23 @@ function App() {
   const [showError, setShowError] = useState(false);
 
   async function fetchData() {
-    const response = await axios.post(
-      `https://weather-pqgi375k2-amarvirsinghs-projects.vercel.app/getWeather`,
-      {
-        location: sentLocation,
-      }
-    );
+    const options = {
+      method: "GET",
+      url: `${process.env.REACT_APP_WEATHER_API}/${sentLocation}/EN`,
+      headers: {
+        "x-rapidapi-key": `${process.env.REACT_APP_API_KEY}`,
+        "x-rapidapi-host": "open-weather13.p.rapidapi.com",
+      },
+    };
+    const response = await axios.request(options);
 
-    if (Number(response.data.data.cod) === 404) {
-      console.log(response.data.data.cod);
+    if (Number(response.data.cod) === 404) {
+      console.log(response.data.cod);
       setShowError(true);
       setData();
       return; //setErrorMessage("Please enter the valid city");
     }
-    setData(response.data.data);
+    setData(response.data);
     setShowError(false);
   }
   const getData = async (e) => {
