@@ -13,7 +13,7 @@ function App() {
 
   async function fetchData() {
     const response = await axios.post(
-      `${process.env.REACT_APP_URI}/getWeather`,
+      `https://weather-pqgi375k2-amarvirsinghs-projects.vercel.app/getWeather`,
       {
         location: sentLocation,
       }
