@@ -1,6 +1,6 @@
 import "../src/App.css";
 import "bootstrap/dist/css/bootstrap.min.css";
-
+import { FaLocationCrosshairs } from "react-icons/fa6";
 import { useState } from "react";
 import axios from "axios";
 
@@ -21,7 +21,6 @@ function App() {
       },
     };
     const response = await axios.request(options);
-
     if (Number(response.data.cod) === 404) {
       console.log(response.data.cod);
       setShowError(true);
@@ -41,6 +40,51 @@ function App() {
       await fetchData();
     }
     setLoading(false);
+  };
+
+  const getDataWithCoordinates = async (lat, long) => {
+    const options = {
+      method: "GET",
+      url: `https://open-weather13.p.rapidapi.com/city/latlon/${lat}/${long}`,
+      headers: {
+        "x-rapidapi-key": `${process.env.REACT_APP_API_KEY}`,
+        "x-rapidapi-host": "open-weather13.p.rapidapi.com",
+      },
+    };
+
+    const response = await axios.request(options);
+
+    if (Number(response.data.cod) === 404) {
+      console.log(response.data.cod);
+      setShowError(true);
+      setData();
+      return; //setErrorMessage("Please enter the valid city");
+    }
+    setData(response.data);
+    setShowError(false);
+  };
+
+  const getLocation = () => {
+    setLoading(true);
+    window.navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        let lat = pos.coords.latitude;
+        let long = pos.coords.longitude;
+        getDataWithCoordinates(lat, long);
+        setLoading(false);
+        //        console.log("on Succssfull > ", pos.coords);
+      },
+      (err) => {
+        setLoading(false);
+        return alert("Please allow Location to get Weather.");
+        //console.log("Error has occured > ", err);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0,
+      }
+    );
   };
 
   return (
@@ -68,6 +112,7 @@ function App() {
           value={sentLocation}
           placeholder="Enter Location"
         />
+        <FaLocationCrosshairs size={30} onClick={getLocation} />
         {Loading ? <div className="spinner-border"> </div> : ""}
         {data ? (
           <div className="">
